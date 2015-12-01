@@ -1,0 +1,13 @@
+#PBS -q debug
+#PBS -l mppwidth=64
+#PBS -l walltime=00:30:00
+#PBS -N LMDZ_RUN
+#PBS -e my_job.$PBS_JOBID.err
+#PBS -o my_job.$PBS_JOBID.out
+#PBS -V
+
+module swap PrgEnv-pgi PrgEnv-gnu
+module swap PrgEnv-intel PrgEnv-gnu
+cd $PBS_O_WORKDIR
+aprun -n 64 ./gcm.e
+

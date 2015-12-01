@@ -1,0 +1,12 @@
+#PBS -q regular
+#PBS -l mppwidth=32
+#PBS -l walltime=01:10:00
+#PBS -N LMDZ_RUN
+#PBS -e my_job.$PBS_JOBID.err
+#PBS -o my_job.$PBS_JOBID.out
+#PBS -V
+
+module swap PrgEnv-pgi PrgEnv-gnu
+cd $PBS_O_WORKDIR
+aprun -n 32 ./gcm.e
+
