@@ -25,7 +25,7 @@ module swap PrgEnv-pgi PrgEnv-gnu #need to use GNU compiler
 
 #naming of run
 export REZ='96x72x19'
-export ADDON='hoptest'
+export ADDON='hopper'
 export RUNNAME="$REZ""$ADDON" 
 
 #runtime parameters - how long is this run going for?
@@ -50,7 +50,7 @@ export RESTARTDIR="$RUNDIR"/restart
 
 #base version of definition and boundary condition files, in case these folders 
 #still do not exist in operating directory
-export BASEDIR=/global/homes/j/jessed/LMD/u
+export BASEDIR=/global/homes/j/jessed/LMDZ_config
 now=$(date +"%m%d%Y")
 export LMDZOUT="$RUNDIR"/LMDZOUT_"$RUNNAME"_"$now".txt
 
@@ -490,12 +490,14 @@ echo "Producing GCM gcm.e"
 
 if [ "$useopenmp" -eq 1 ]; then
 
-	#MPI parallelization only
+	echo "Compiling gcm.e with joint MPI and OMP parallelization"
+	sleep 2
 	./makelmdz_fcm -arch hopper -d "$REZ" -parallel mpi_omp -mem gcm
 
 else
 
-	#combination of MPI and OMP - effectively multithreading
+	echo "Compiling gcm.e with MPI parallelization only"
+	sleep 2
 	./makelmdz_fcm -arch local -d "$REZ" -parallel mpi -mem gcm
 
 fi
@@ -785,20 +787,39 @@ ln -s "$TRACEURPATH" ${RUNDIR}/traceur.def
 ## TIER 1 ##
 if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs ]; then
 
+	echo 1
+	sleep 3
+
 	if [ "$useopenmp" -eq 1 ]; then
 
+		echo 2
+		sleep 3
+
 		echo "Using Combined MPI/OMP batch job script for this run"
-		cp "$BASEDIR"/lmdzrun_mpiomp.pbs "$LMDZDIR"/lmdzrun.pbs
+		cp "$BASEDIR"/lmdzrun_mpiomp.pbs "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs
 
 	else
 
+		echo 3
+		sleep 3
+
 		echo "Using MPI script alone for this run"
-		cp "$BASEDIR"/lmdzrun_mpi.pbs "$LMDZDIR"/lmdzrun.pbs
+		cp "$BASEDIR"/lmdzrun_mpi.pbs "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs
 
 	fi
 
 	#from here on, depending on whether OpenMP is used or not, relies on different
 	#default version of lmdzrun.pbs
+	echo 4
+	sleep 3
+
+
+	if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs ]; then
+
+		echo 5
+		sleep 3
+
+	fi
 
 fi
 
@@ -807,14 +828,20 @@ fi
 
 #move the job submission script lmdzrun.pbs to sim directory. Delete any
 #existing job script (allows us to update script directly in LMDZdir)
+echo 6
+sleep 3
+
 if [ -f "$RUNDIR"/lmdzrun.pbs ]; then
 
+	echo 7
 	rm "$RUNDIR"/lmdzrun.pbs
+	sleep 3
 
 fi
 
+echo 8
 cp "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs "$RUNDIR"/lmdzrun.pbs
-
+sleep 3
 
 #editing the job submission script to name of current run
 sed -i -e "s/#PBS -N LMDZ[A-Za-z0-9_][A-Za-z0-9_]*/#PBS -N LMDZ${ADDON}/" lmdzrun.pbs
@@ -941,7 +968,9 @@ do
 
 				#submit job
 				#add year and month to name of run in lmdzrun.pbs
+				echo 9
 				sed -i -e "s/#PBS -N LMDZ${ADDON}[A-Za-z0-9_]*/#PBS -N LMDZ${ADDON}${RUNDATE}/" lmdzrun.pbs
+				echo 10
 
 				#job submission and defining filenames
 				jobname=$(qsub lmdzrun.pbs)
