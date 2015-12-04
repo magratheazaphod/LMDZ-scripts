@@ -32,7 +32,7 @@ export RUNNAME="$REZ""$ADDON"
 yb=1991
 ye=1991
 mb=1
-me=2
+me=1
 
 #reference directories
 export LMDZDIR="$PWD"
@@ -50,8 +50,7 @@ export RESTARTDIR="$RUNDIR"/restart
 
 #base version of definition and boundary condition files, in case these folders 
 #still do not exist in operating directory
-export BASEDIR=/global/homes/j/jessed/LMDZ_config
-
+export BASEDIR=/global/homes/j/jessed/LMD/u
 now=$(date +"%m%d%Y")
 export LMDZOUT="$RUNDIR"/LMDZOUT_"$RUNNAME"_"$now".txt
 
@@ -73,6 +72,11 @@ export useopenmp=0
 if [ $useopenmp -eq 1 ]; then
 
 	export OMP_NUM_THREADS=6 #optimal value for Hopper according to documentation
+	echo "Using both MPI and OpenMP parallelization with $OMP_NUM_THREADS OpenMP threads per MPI process"
+
+else
+
+	echo "Using MPI parallelization only"
 
 fi
 
@@ -486,7 +490,7 @@ if ! [[ -f "$GCM_OLD" ]]; then
 	if [ "$useopenmp" -eq 1 ]; then
 
 		#MPI parallelization only
-		./makelmdz_fcm -arch local -d "$REZ" -parallel mpi_omp -mem gcm
+		./makelmdz_fcm -arch hopper -d "$REZ" -parallel mpi_omp -mem gcm
 
 	else
 
@@ -775,20 +779,21 @@ ln -s "$TRACEURPATH" ${RUNDIR}/traceur.def
 
 #again, new 3-tier system - most generic version of lmdzrun.pbs stored inside of
 #BASEDIR. If none exists for this version yet, that one will be copied over.
+#BASEDIR contains two versions of lmdzrun script: lmdzrun_mpi.pbs and
+#lmdzrun_mpiomp.pbs, depending on what kind of parallelization we're using
+#(indicated by the variable $useopenmp)
 
-## FURTHER EDIT on Nov 30 - PARALLELIZATION CHOICE
-## IF USEOPENMP=1, then load OpenMP version of pbs script by default.
-
-if ! [ -f "$LMDZDIR"/lmdzrun.pbs ]; then
+## TIER 1 ##
+if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs ]; then
 
 	if [ "$useopenmp" -eq 1 ]; then
 
-		#OpenMP PBS script
+		echo "Using Combined MPI/OMP batch job script for this run"
 		cp "$BASEDIR"/lmdzrun_mpiomp.pbs "$LMDZDIR"/lmdzrun.pbs
 
 	else
 
-		#MPI PBS script
+		echo "Using MPI script alone for this run"
 		cp "$BASEDIR"/lmdzrun_mpi.pbs "$LMDZDIR"/lmdzrun.pbs
 
 	fi
@@ -798,14 +803,11 @@ if ! [ -f "$LMDZDIR"/lmdzrun.pbs ]; then
 
 fi
 
-#if we don't have a tailored version of the lmdzrun.pbs script for this run yet, then make one
-if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs ]; then
 
-	cp "$LMDZDIR"/lmdzrun.pbs "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs
+## TIER 2 ##
 
-fi
-
-#move the job submission script lmdzrun.pbs to sim directory if necessary.
+#move the job submission script lmdzrun.pbs to sim directory. Delete any
+#existing job script (allows us to update script directly in LMDZdir)
 if [ -f "$RUNDIR"/lmdzrun.pbs ]; then
 
 	rm "$RUNDIR"/lmdzrun.pbs
@@ -869,7 +871,7 @@ fi
 
 # fi
 
-#SIMULATI"ON LOOP
+#SIMULATION LOOP
 skiploop=0 #used when restarting sim from restart files.
 
 for (( yl=$yb; yl<=$ye; yl++ ))
