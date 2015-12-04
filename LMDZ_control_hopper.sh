@@ -483,21 +483,20 @@ if [ -f "$RUNDIR"/gcm.e ]; then
 
 fi
 
-if ! [[ -f "$GCM_OLD" ]]; then
+## changed December 4th, 2015
+## edited so it remakes gcm.e every time - necessary because
+# we now have to choose between making version with or without OpenMP
+echo "Producing GCM gcm.e"
 
-	echo "Producing GCM gcm.e"
+if [ "$useopenmp" -eq 1 ]; then
 
-	if [ "$useopenmp" -eq 1 ]; then
+	#MPI parallelization only
+	./makelmdz_fcm -arch hopper -d "$REZ" -parallel mpi_omp -mem gcm
 
-		#MPI parallelization only
-		./makelmdz_fcm -arch hopper -d "$REZ" -parallel mpi_omp -mem gcm
+else
 
-	else
-
-		#combination of MPI and OMP - effectively multithreading
-		./makelmdz_fcm -arch local -d "$REZ" -parallel mpi -mem gcm
-
-	fi
+	#combination of MPI and OMP - effectively multithreading
+	./makelmdz_fcm -arch local -d "$REZ" -parallel mpi -mem gcm
 
 fi
 
