@@ -785,17 +785,17 @@ ln -s "$TRACEURPATH" ${RUNDIR}/traceur.def
 #(indicated by the variable $useopenmp)
 
 ## TIER 1 ##
-if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs ]; then
+if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.sl ]; then
 
 	if [ "$useopenmp" -eq 1 ]; then
 
 		echo "Using Combined MPI/OMP batch job script for this run"
-		cp "$BASEDIR"/lmdzrun_mpiomp.sl "$LMDZDIR"/lmdzrun_${RUNNAME}.sl
+		cp "$BASEDIR"/lmdzrun_cori_mpiomp.sl "$LMDZDIR"/lmdzrun_${RUNNAME}.sl
 
 	else
 
 		echo "Using MPI script alone for this run"
-		cp "$BASEDIR"/lmdzrun_mpi.sl "$LMDZDIR"/lmdzrun_${RUNNAME}.sl
+		cp "$BASEDIR"/lmdzrun_cori_mpi.sl "$LMDZDIR"/lmdzrun_${RUNNAME}.sl
 
 	fi
 
@@ -819,7 +819,7 @@ fi
 cp "$LMDZDIR"/lmdzrun_${RUNNAME}.sl "$RUNDIR"/lmdzrun.sl
 
 #editing the job submission script to name of current run
-sed -i -e "s/#SBATCH -J LMDZ[A-Za-z0-9_][A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}/" lmdzrun.pbs
+sed -i -e "s/#SBATCH -J LMDZ[A-Za-z0-9_][A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}/" lmdzrun.sl
 
 #if the LMDZ_save.sh script does not exist in this version yet, import from 
 #reference folder
@@ -943,7 +943,7 @@ do
 
 				#submit job
 				#add year and month to name of run in lmdzrun.pbs
-				sed -i -e "s/#SBATCH -J LMDZ${ADDON}[A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}${RUNDATE}/" lmdzrun.pbs
+				sed -i -e "s/#SBATCH -J LMDZ${ADDON}[A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}${RUNDATE}/" lmdzrun.sl
 
 				#job submission and defining filenames
 				jobname=$(sbatch lmdzrun.sl)
