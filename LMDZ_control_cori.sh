@@ -790,12 +790,12 @@ if ! [ -f "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs ]; then
 	if [ "$useopenmp" -eq 1 ]; then
 
 		echo "Using Combined MPI/OMP batch job script for this run"
-		cp "$BASEDIR"/lmdzrun_mpiomp.pbs "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs
+		cp "$BASEDIR"/lmdzrun_mpiomp.sl "$LMDZDIR"/lmdzrun_${RUNNAME}.sl
 
 	else
 
 		echo "Using MPI script alone for this run"
-		cp "$BASEDIR"/lmdzrun_mpi.pbs "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs
+		cp "$BASEDIR"/lmdzrun_mpi.sl "$LMDZDIR"/lmdzrun_${RUNNAME}.sl
 
 	fi
 
@@ -810,16 +810,16 @@ fi
 #move the job submission script lmdzrun.pbs to sim directory. Delete any
 #existing job script (allows us to update script directly in LMDZdir)
 
-if [ -f "$RUNDIR"/lmdzrun.pbs ]; then
+if [ -f "$RUNDIR"/lmdzrun.sl ]; then
 
-	rm "$RUNDIR"/lmdzrun.pbs
+	rm "$RUNDIR"/lmdzrun.sl
 
 fi
 
-cp "$LMDZDIR"/lmdzrun_${RUNNAME}.pbs "$RUNDIR"/lmdzrun.pbs
+cp "$LMDZDIR"/lmdzrun_${RUNNAME}.sl "$RUNDIR"/lmdzrun.sl
 
 #editing the job submission script to name of current run
-sed -i -e "s/#PBS -N LMDZ[A-Za-z0-9_][A-Za-z0-9_]*/#PBS -N LMDZ${ADDON}/" lmdzrun.pbs
+sed -i -e "s/#SBATCH -J LMDZ[A-Za-z0-9_][A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}/" lmdzrun.pbs
 
 #if the LMDZ_save.sh script does not exist in this version yet, import from 
 #reference folder
@@ -943,19 +943,19 @@ do
 
 				#submit job
 				#add year and month to name of run in lmdzrun.pbs
-				sed -i -e "s/#PBS -N LMDZ${ADDON}[A-Za-z0-9_]*/#PBS -N LMDZ${ADDON}${RUNDATE}/" lmdzrun.pbs
+				sed -i -e "s/#SBATCH -J LMDZ${ADDON}[A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}${RUNDATE}/" lmdzrun.pbs
 
 				#job submission and defining filenames
-				jobname=$(qsub lmdzrun.pbs)
+				jobname=$(sbatch lmdzrun.sl)
 				echo "Jobname: ${jobname}"
-				joberr="my_job.${jobname}.err"
-				jobout="my_job.${jobname}.out"
-				joberrtemp="${jobname}.ER"
-				jobouttemp="${jobname}.OU"
-				echo "Temporary job error log: ${joberrtemp}"
-				echo "Temporary job output: ${jobouttemp}"
-				echo "Final job error log: ${joberr}"
-				echo "Final job output: ${jobout}"
+				#joberr="slurm.${jobname}.err"
+				#jobout="my_job.${jobname}.out"
+				#joberrtemp="${jobname}.ER"
+				#jobouttemp="${jobname}.OU"
+				#echo "Temporary job error log: ${joberrtemp}"
+				#echo "Temporary job output: ${jobouttemp}"
+				#echo "Final job error log: ${joberr}"
+				#echo "Final job output: ${jobout}"
 
 				# #must wait until job finishes to continue with rest of script - checks if output file exists yet or not
 				ii="0"
