@@ -25,7 +25,7 @@ module swap PrgEnv-pgi PrgEnv-gnu #need to use GNU compiler
 
 #naming of run
 export REZ='96x72x19'
-export ADDON='hopper'
+export ADDON='coritest'
 export RUNNAME="$REZ""$ADDON" 
 
 #runtime parameters - how long is this run going for?
