@@ -119,7 +119,7 @@ export ORCHIDEEBASE="$DEFDIR"/orchidee_5B.def
 export OUTPUTBASE="$DEFDIR"/output_JD.def
 export PHYSIQBASE="$DEFDIR"/physiq_5B.def
 export RUNDEFBASE="$DEFDIR"/run_5B.def
-export TRACEURBASE="$DEFDIR"/traceur_5B.def
+export TRACEURBASE="$DEFDIR"/traceur_JD.def
 
 #TIER 3 - location of tailored definition files
 export CONFIGPATH="$DEFDIR"/config_"$RUNNAME".def
