@@ -32,7 +32,7 @@ export RUNNAME="$REZ""$ADDON"
 yb=1991
 ye=1991
 mb=1
-me=1
+me=2
 
 #reference directories
 export LMDZDIR="$PWD"
