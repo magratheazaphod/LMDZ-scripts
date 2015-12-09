@@ -946,37 +946,69 @@ do
 				sed -i -e "s/#SBATCH -J LMDZ${ADDON}[A-Za-z0-9_]*/#SBATCH -J LMDZ${ADDON}${RUNDATE}/" lmdzrun.sl
 
 				#job submission and defining filenames
-				jobname=$(sbatch lmdzrun.sl)
-				echo "Jobname: ${jobname}"
-				#joberr="slurm.${jobname}.err"
-				#jobout="my_job.${jobname}.out"
+				jobout=$(sbatch lmdzrun.sl)
+				IFS=" ", read -a jobtemp <<< "$jobout"
+				jobnum="${jobtemp[3]}"
+
+				echo "Job number: ${jobnum}"
+				joberr="lmdzrun-${jobnum}.err"
+				jobout="lmdzrun-${jobnum}.out"
+				echo "Job error log: ${joberr}"
+				echo "Job output: ${jobout}"
+				
+				## no longer applicable with the new SLURB job scheduler
 				#joberrtemp="${jobname}.ER"
 				#jobouttemp="${jobname}.OU"
+				
 				#echo "Temporary job error log: ${joberrtemp}"
 				#echo "Temporary job output: ${jobouttemp}"
 				#echo "Final job error log: ${joberr}"
 				#echo "Final job output: ${jobout}"
 
-				# #must wait until job finishes to continue with rest of script - checks if output file exists yet or not
+				##MONITOR JOB STATUS UNTIL FINISHED
+				# must wait until job finishes to continue with rest of script - checks if output file exists yet or not
+
+				jobstate=$(sqs -f $jobnum | grep JobState)
+				IFS=" ", read -a tempstate <<< "$jobstate"
+				IFS="=", read -a stateout <<< "${tempstate[0]}"
+				jobstatus=${stateout[1]}
+
 				ii="0"
 
-				while [ ! -f "$jobout" ] ;
+				##DO-WHILE LOOP TO REPEATEDLY CHECK WHETHER JOB IS FINISHED
+				while ! [[ "$jobstatus" == "COMPLETED" ]] ;
 				do
+
 		      		sleep 30
 					ii=$[$ii+30]
 		      		echo "Waiting "${ii}" seconds..."
 
+		      		## NEW MODULE USED WITH CORI ##
+		      		#Cori uses new SLURM job launcher, so requires different syntax.
+		      		jobstate=$(sqs -f $jobnum | grep JobState)
+					IFS=" ", read -a tempstate <<< "$jobstate"
+					IFS="=", read -a stateout <<< "${tempstate[0]}"
+					jobstatus=${stateout[1]}
+
+					echo "Job's current status: $jobstatus"
+
+					if [ "$jobstatus" == "CANCELLED" | "$jobstatus" == "FAILED"  ]; then
+						echo "Job unexpectedly cancelled - quitting script"
+						exit 1
+					fi
+
+					## OLD CODE USED WITH SLURM ##
 		      		#following posts a message if job is actually being run
-		      		if [ ! -f "$jobouttemp" ]
-		      		then
-		      			echo "Still waiting to start job"
-		      		else
-		      			echo "Job currently running"
-		      	    fi
+		      		#if [ ! -f "$jobouttemp" ]
+		      		#then
+		      		#	echo "Still waiting to start job"
+		      		#else
+		      		#	echo "Job currently running"
+		      	    #fi
 
 				done
 
-				echo "Previous job complete!"
+				echo "Finished running job LMDZ${ADDON}${RUNDATE}"
 
 				# save run output to hsi, set up next run. 
 				# also, saves restart.nc and restartphy.nc so that run can easily be restarted at any point in time.
