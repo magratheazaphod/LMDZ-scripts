@@ -992,7 +992,7 @@ do
 
 					echo "Job's current status: $jobstatus"
 
-					if [ "$jobstatus" == "CANCELLED" | "$jobstatus" == "FAILED"  ]; then
+					if [[ ( "$jobstatus" == "CANCELLED" ) || ( "$jobstatus" == "FAILED" ) ]]; then
 						echo "Job unexpectedly cancelled - quitting script"
 						exit 1
 					fi
