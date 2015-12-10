@@ -3,6 +3,9 @@
 #LMDZ_control.sh, written by Jesse Day, July 27th 2015. Runs the LMDZ model for a given subset of years.
 #Creates batch jobs to run model one month at a time, saves output.
 
+#current version customized to run on the Cori supercomputer.
+#IMPORTANT: need to edit path to the rebuild utility in LMDZ.
+
 #Depends on the previous upload of the LMDZ_save.sh script to the same folder
 
 #REZ gives resolution, while RUNNAME is the unique identifier for a set of runs (for instance, with altered SST)
@@ -16,9 +19,6 @@
 
 #the proper execution of this script requires that DefLists include certain existing reference
 #definition files - all of the *_5B.def files, the LMDZ_save.sh script and lmdzrun.pbs
-
-#10/21 updated - script now customized for running on Edison:
-#-loads lmdzrun_edison.pbs instead of lmdzrun.pbs, which changes the compiler for batch jobs.
 
 module swap PrgEnv-intel PrgEnv-gnu #need to use GNU compiler
 module swap PrgEnv-pgi PrgEnv-gnu #need to use GNU compiler
@@ -44,7 +44,7 @@ export CE0LREFDIR="$PWD"/create_etat0_limit #where base versions of boundary con
 export CE0L_OLD="$PWD"/bin/ce0l"$SUFSEQ".e
 export GCM_OLD="$PWD"/bin/gcm"$SUF".e
 export HISTDIR="$RUNDIR"/hist
-export REBUILD=/scratch2/scratchdirs/jessed/LMDZtrunk/modipsl/bin/rebuild
+export REBUILD=/global/cscratch1/sd/jessed/LMDZtrunk/modipsl/bin/rebuild 
 export DEFDIR="$PWD"/DefLists
 export RESTARTDIR="$RUNDIR"/restart
 
