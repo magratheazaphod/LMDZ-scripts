@@ -7,6 +7,7 @@
 #location of REBUILD script is also given in control script LMDZ_control.sh
 
 #get rid of old temporary reconstructed files in case they exist
+
 echo "Clearing existing history files..."
 
 if [ -f histmth_"$RUNDATE".nc ]; then
@@ -29,6 +30,7 @@ if [ -f histhf_"$RUNDATE".nc ]; then
 	rm histhf_"$RUNDATE".nc
 
 fi
+
 
 #precautionary code in case these files have already been created - be careful not to overwrite past data!
 echo "Transferring any existing history files to backup filenames..."
@@ -58,11 +60,22 @@ fi
 #use the rebuild script from IOIPSL to glue parallel components back together
 echo "Using the IOIPSL rebuild script to stitch run output back together..."
 
+#histmth
+echo "Stitching together histmth_$RUNDATE.nc..."
 "$REBUILD" -o histmth_"$RUNDATE".nc histmth_*.nc   #month
+echo "Moving histmth_$RUNDATE.nc to hist directory..."
 cp histmth_"$RUNDATE".nc "$HISTDIR"/histmth_"$RUNDATE".nc
+
+#histday
+echo "Stitching together histday_$RUNDATE.nc..."
 "$REBUILD" -o histday_"$RUNDATE".nc histday_*.nc   #day
+echo "Moving histday_$RUNDATE.nc to hist directory..."
 cp histday_"$RUNDATE".nc "$HISTDIR"/histday_"$RUNDATE".nc
+
+#histhf
+echo "Stitching together histhf_$RUNDATE.nc..."
 "$REBUILD" -o histhf_"$RUNDATE".nc histhf_*.nc   #high-frequency
+echo "Moving histhf_$RUNDATE.nc to hist directory..."
 cp histhf_"$RUNDATE".nc "$HISTDIR"/histhf_"$RUNDATE".nc
 
 
@@ -110,6 +123,7 @@ hsi "cd ${HSIHIST}; put histhf_${RUNDATE}.nc"
 hsi "cd ${HSIRESTART}; put restart_${RUNDATE}.nc; put restartphy_${RUNDATE}.nc"
 
 hsi "ls ${HSIHOME}; cd ${HSIRESTART}"
+
 
 #remove temporary copy of files (had to create to upload to HSI)
 echo "Cleaning up all leftover history and restart files in sim directory..."
